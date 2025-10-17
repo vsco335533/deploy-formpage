@@ -1,12 +1,14 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
+// Hardcode the production URL for now
+const API_URL = 'https://forms-octacomm.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
-  timeout: 10000, // 10 second timeout
+  withCredentials: false, // Disable this for now
+  timeout: 30000, // 30 second timeout
   headers: {
+    'Accept': 'application/json',
     'Content-Type': 'application/json'
   }
 });
@@ -22,35 +24,34 @@ api.interceptors.request.use((config) => {
 
 export const authApi = {
   register: async (email, password, name) => {
-    console.log('Attempting registration with:', { email, name });
-    console.log('API URL:', API_URL);
+    console.log('Starting registration...');
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      // Make a direct axios call without any fancy options
+      const response = await axios({
+        method: 'post',
+        url: `${API_URL}/auth/register`,
+        data: { email, password, name },
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      });
       
-      const response = await api.post('/auth/register', 
-        { email, password, name },
-        { 
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      clearTimeout(timeoutId);
-      console.log('Registration response:', response.data);
+      console.log('Registration successful:', response.data);
       return response;
     } catch (error) {
-      console.error('Registration error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        headers: error.response?.headers
-      });
-      if (error.code === 'ECONNABORTED' || error.message === 'Network Error') {
-        throw new Error('Registration timed out. Please try again.');
+      console.error('Registration failed:', error);
+      // Show the exact error for debugging
+      if (error.response) {
+        // Server responded with error
+        console.error('Server error:', error.response.data);
+      } else if (error.request) {
+        // Request made but no response
+        console.error('No response from server');
+      } else {
+        // Something else failed
+        console.error('Error:', error.message);
       }
       throw error;
     }

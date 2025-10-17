@@ -23,11 +23,8 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(forms_bp, url_prefix='/api/forms')
 app.register_blueprint(responses_bp, url_prefix='/api/responses')
 
-# Allow configuring allowed CORS origins via environment variable ALLOWED_ORIGINS
-# Example: ALLOWED_ORIGINS="https://your-vercel-app.vercel.app,http://localhost:3000"
-allowed = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000')
-allowed_list = [o.strip() for o in allowed.split(',') if o.strip()]
-CORS(app, resources={r"/api/*": {"origins": allowed_list}}, supports_credentials=True)
+# Allow all origins for now to debug
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
 
 @app.route('/')
 def index():
