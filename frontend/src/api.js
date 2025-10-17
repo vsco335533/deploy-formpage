@@ -17,7 +17,18 @@ api.interceptors.request.use((config) => {
 });
 
 export const authApi = {
-  register: (email, password, name) => api.post('/auth/register', { email, password, name }),
+  register: async (email, password, name) => {
+    console.log('Attempting registration with:', { email, name });
+    console.log('API URL:', API_URL);
+    try {
+      const response = await api.post('/auth/register', { email, password, name });
+      console.log('Registration response:', response.data);
+      return response;
+    } catch (error) {
+      console.error('Registration error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
   login: (email, password) => api.post('/auth/login', { email, password }),
   googleLogin: (email, name) => api.post('/auth/google', { email, name }),
   getMe: async () => {
