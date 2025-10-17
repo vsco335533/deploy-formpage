@@ -5,6 +5,10 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
+  timeout: 10000, // 10 second timeout
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 // Add JWT token to requests
@@ -21,11 +25,33 @@ export const authApi = {
     console.log('Attempting registration with:', { email, name });
     console.log('API URL:', API_URL);
     try {
-      const response = await api.post('/auth/register', { email, password, name });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const response = await api.post('/auth/register', 
+        { email, password, name },
+        { 
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      clearTimeout(timeoutId);
       console.log('Registration response:', response.data);
       return response;
     } catch (error) {
-      console.error('Registration error:', error.response?.data || error.message);
+      console.error('Registration error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+      if (error.code === 'ECONNABORTED' || error.message === 'Network Error') {
+        throw new Error('Registration timed out. Please try again.');
+      }
       throw error;
     }
   },
