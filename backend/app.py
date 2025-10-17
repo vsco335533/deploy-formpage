@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 import os
 from flask_jwt_extended import JWTManager
@@ -23,8 +23,26 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(forms_bp, url_prefix='/api/forms')
 app.register_blueprint(responses_bp, url_prefix='/api/responses')
 
-# Allow all origins for now to debug
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
+# Configure CORS
+CORS(app, 
+     resources={
+         r"/api/*": {
+             "origins": "*",
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization", "Accept"],
+             "supports_credentials": False
+         }
+     })
+
+# Add OPTIONS handler for all routes
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,Accept")
+        response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+        return response
 
 @app.route('/')
 def index():
