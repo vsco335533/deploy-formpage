@@ -1,0 +1,88 @@
+version: '3.8'
+
+
+
+services:
+
+ frontend:
+
+  build:
+
+   context: ./frontend
+
+   dockerfile: Dockerfile
+
+  ports:
+
+   - "3000:80"
+
+  depends_on:
+
+   - backend
+
+  environment:
+
+   - REACT_APP_API_URL=http://localhost:5050/api
+
+  restart: unless-stopped
+
+ backend:
+
+  build:
+
+   context: ./backend
+
+   dockerfile: Dockerfile
+
+  ports:
+
+   - "5000:5000"
+
+  environment:
+
+   - FLASK_APP=app.py
+
+   - FLASK_ENV=production
+
+   - JWT_SECRET_KEY=your-secret-key-here
+
+   - MONGO_URI=mongodb://mongodb:27017/form_builder
+
+   - GOOGLE_CLIENT_ID=your-google-client-id
+
+  depends_on:
+
+   - mongodb
+
+  volumes:
+
+   - ./backend/google-credentials.json:/app/google-credentials.json
+
+  restart: unless-stopped
+
+ mongodb:
+
+  image: mongo:6
+
+  ports:
+
+   - "27017:27017"
+
+  volumes:
+
+   - mongodb_data:/data/db
+
+  environment:
+
+   - MONGO_INITDB_DATABASE=form_builder
+
+  restart: unless-stopped
+
+volumes:
+
+ mongodb_data:
+
+
+
+
+
