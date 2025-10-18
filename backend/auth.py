@@ -38,15 +38,20 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
+    print('Login endpoint called')
     data = request.get_json()
+    print('Request data:', data)
     email = data.get('email')
     password = data.get('password')
 
     if not email or not password:
+        print('Missing email or password')
         return jsonify({'error': 'Email and password are required'}), 400
 
     user = User.find_by_email(email)
+    print('Found user:', bool(user))
     if not user or not User.verify_password(user, password):
+        print('Invalid credentials. User exists:', bool(user))
         return jsonify({'error': 'Invalid credentials'}), 401
 
     access_token = create_access_token(identity=str(user['_id']))

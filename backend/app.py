@@ -27,10 +27,12 @@ app.register_blueprint(responses_bp, url_prefix='/api/responses')
 CORS(app, 
      resources={
          r"/api/*": {
-             "origins": "*",
+             "origins": ["https://forms-octacomm.vercel.app"],
              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
              "allow_headers": ["Content-Type", "Authorization", "Accept"],
-             "supports_credentials": False
+             "expose_headers": ["Content-Type", "Authorization"],
+             "supports_credentials": True,
+             "max_age": 3600
          }
      })
 
