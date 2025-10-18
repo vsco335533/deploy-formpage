@@ -62,6 +62,26 @@ def get_google_client_email():
         client_email = ''
     return jsonify({"client_email": client_email})
 
+
+# Internal/debug endpoint: DB ping status (SAFE — does NOT return credentials)
+@app.route('/api/internal/db-status', methods=['GET'])
+def db_status():
+    try:
+        # Use the PyMongo client to ping the server
+        mongo.cx.admin.command('ping')
+        return jsonify({'db': 'ok'}), 200
+    except Exception as e:
+        # Return the exception message to help debugging (do not expose URI)
+        return jsonify({'db': 'error', 'details': str(e)}), 500
+
+
+# Internal/debug endpoint: environment flag checks (do not return secrets)
+@app.route('/api/internal/env', methods=['GET'])
+def env_info():
+    # Only indicate whether MONGO_URI is set, not its value
+    mongo_set = bool(os.getenv('MONGO_URI'))
+    return jsonify({'mongo_uri_set': mongo_set}), 200
+
 if __name__ == '__main__':
     app.run(debug=True, port=5050)
     
