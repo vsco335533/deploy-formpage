@@ -23,11 +23,15 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(forms_bp, url_prefix='/api/forms')
 app.register_blueprint(responses_bp, url_prefix='/api/responses')
 
-# Configure CORS
+# Configure CORS to allow all Vercel subdomains and known frontend URLs
 CORS(app, 
      resources={
          r"/api/*": {
-             "origins": ["https://forms-octacomm.vercel.app"],
+             "origins": [
+                 "https://*.vercel.app",
+                 "https://forms-octacomm.vercel.app",
+                 "https://deploy-formpage-frontend-hnpthlkb6.vercel.app"
+             ],
              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
              "allow_headers": ["Content-Type", "Authorization", "Accept"],
              "expose_headers": ["Content-Type", "Authorization"],
