@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Hardcode the production URL for now
-const API_URL = 'https://forms-octacomm.onrender.com/api';
+// Prefer environment variable (set this in Vercel), fall back to the Render URL
+const API_URL = process.env.REACT_APP_API_URL || 'https://forms-octacomm.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -24,36 +24,25 @@ api.interceptors.request.use((config) => {
 
 export const authApi = {
   register: async (email, password, name) => {
-    console.log('Starting registration...');
+    console.log('Starting registration to', API_URL + '/auth/register');
     try {
-      // Make a direct axios call without any fancy options
-      const response = await axios({
-        method: 'post',
-        url: `${API_URL}/auth/register`,
-        data: { email, password, name },
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        timeout: 30000
-      });
-      
+      // Use the shared axios instance so baseURL and headers are consistent
+      const response = await api.post('/auth/register', { email, password, name });
       console.log('Registration successful:', response.data);
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Registration failed:', error);
-      // Show the exact error for debugging
+      // Provide more actionable diagnostics for the UI/devtools
       if (error.response) {
-        // Server responded with error
-        console.error('Server error:', error.response.data);
+        console.error('Server error response:', error.response.status, error.response.data);
+        throw error.response.data;
       } else if (error.request) {
-        // Request made but no response
-        console.error('No response from server');
+        console.error('No response from server (network/CORS issue)');
+        throw { error: 'No response from server. Possible network/CORS issue.' };
       } else {
-        // Something else failed
-        console.error('Error:', error.message);
+        console.error('Request setup error:', error.message);
+        throw { error: error.message };
       }
-      throw error;
     }
   },
   login: (email, password) => api.post('/auth/login', { email, password }),
