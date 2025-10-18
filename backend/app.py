@@ -34,16 +34,6 @@ CORS(app,
          }
      })
 
-# Add OPTIONS handler for all routes
-@app.before_request
-def handle_preflight():
-    if request.method == "OPTIONS":
-        response = make_response()
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,Accept")
-        response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
-        return response
-
 @app.route('/')
 def index():
     return jsonify({"status": "API is running"})
